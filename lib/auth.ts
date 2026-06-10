@@ -37,32 +37,43 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const validated = loginSchema.safeParse(credentials);
+        try {
+          const validated = loginSchema.safeParse(credentials);
 
-        if (!validated.success) {
-          return null;
+          if (!validated.success) {
+            return null;
+          }
+
+          const user = await prisma.user.findUnique({
+            where: {
+              email: validated.data.email,
+            },
+          });
+
+          if (!user) {
+            console.warn("Login failed: user not found", {
+              email: validated.data.email,
+            });
+            return null;
+          }
+
+          const passwordMatches = await bcrypt.compare(validated.data.password, user.password);
+          if (!passwordMatches) {
+            console.warn("Login failed: password mismatch", {
+              email: validated.data.email,
+            });
+            return null;
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+          };
+        } catch (error) {
+          console.error("Login failed: database error", error);
+          throw error;
         }
-
-        const user = await prisma.user.findUnique({
-          where: {
-            email: validated.data.email,
-          },
-        });
-
-        if (!user) {
-          return null;
-        }
-
-        const passwordMatches = await bcrypt.compare(validated.data.password, user.password);
-        if (!passwordMatches) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        };
       },
     }),
   ],

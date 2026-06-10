@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validators";
 
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -41,7 +43,17 @@ export async function POST(request: Request) {
     });
 
     return Response.json({ user }, { status: 201 });
-  } catch {
-    return Response.json({ error: "Registration failed." }, { status: 500 });
+  } catch (error) {
+    console.error("Registration failed", error);
+
+    return Response.json(
+      {
+        error:
+          error instanceof Error
+            ? `Registration failed: ${error.message}`
+            : "Registration failed.",
+      },
+      { status: 500 }
+    );
   }
 }
