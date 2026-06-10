@@ -7,7 +7,10 @@ import { ForumMark } from "@/components/forum-mark";
 
 export default async function Home() {
   const [posts, session] = await Promise.all([
-    getPosts(),
+    getPosts().catch((error) => {
+      console.error("Failed to load homepage posts", error);
+      return [];
+    }),
     getForumSession(),
   ]);
 

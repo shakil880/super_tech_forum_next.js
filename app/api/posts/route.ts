@@ -3,8 +3,13 @@ import { createPost, getPosts } from "@/lib/forum";
 import { postSchema } from "@/lib/validators";
 
 export async function GET() {
-  const posts = await getPosts();
-  return Response.json({ posts });
+  try {
+    const posts = await getPosts();
+    return Response.json({ posts });
+  } catch (error) {
+    console.error("Failed to load posts", error);
+    return Response.json({ error: "Unable to load posts." }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {

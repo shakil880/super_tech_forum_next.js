@@ -56,32 +56,27 @@ function toComment(comment: {
 }
 
 export async function getPosts(): Promise<ForumPostSummary[]> {
-  try {
-    const posts = await prisma.post.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
+  const posts = await prisma.post.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
 
-        author: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-          },
+      author: {
+        select: {
+          name: true,
+          email: true,
         },
       },
-    });
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
+    },
+  });
 
-    return posts.map(toSummary);
-  } catch (error) {
-    console.error("Failed to load posts", error);
-    return [];
-  }
+  return posts.map(toSummary);
 }
 
 export async function getPostById(id: string): Promise<ForumPostDetail | null> {
