@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth/next";
+import { unstable_rethrow } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validators";
@@ -91,5 +92,11 @@ export const authOptions = {
 export type ForumSessionResult = ForumSession | null;
 
 export async function getForumSession() {
-  return (await getServerSession(authOptions)) as ForumSessionResult;
+  try {
+    return (await getServerSession(authOptions)) as ForumSessionResult;
+  } catch (error) {
+    unstable_rethrow(error);
+    console.error("Failed to load session", error);
+    return null;
+  }
 }
